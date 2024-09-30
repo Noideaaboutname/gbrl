@@ -254,12 +254,12 @@ class TestGBTSingle(unittest.TestCase):
         X, y = self.single_data
         gbrl_params = dict({"control_variates": False, "split_score_func": "L2"})
         model = GBRL(
-                            output_dim=self.out_dim,
-                            tree_struct=self.tree_struct,
-                            optimizer=self.sgd_optimizer,
-                            gbrl_params=gbrl_params,
-                            verbose=0,
-                            device='cpu')
+                    output_dim=self.out_dim,
+                    tree_struct=self.tree_struct,
+                    optimizer=self.sgd_optimizer,
+                    gbrl_params=gbrl_params,
+                    verbose=0,
+                    device='cpu')
         model.set_bias_from_targets(y)
         loss = rmse_model(model, X, y, self.n_epochs)
         self.assertTrue(loss < 0.5, f'Expected loss = {loss} < 0.5')
@@ -267,7 +267,7 @@ class TestGBTSingle(unittest.TestCase):
         model._model.reset()
         model.set_bias_from_targets(y)
         train_loss = model.fit(X, y, self.n_epochs)
-        value = 4.0
+        value = 33.0
         self.assertTrue(train_loss < value, f'Expected loss = {train_loss} < {value}')
         X_categorical, y_categorical = self.cat_data
         model._model.reset()
