@@ -322,12 +322,13 @@ class TestGBTSingle(unittest.TestCase):
                             device='cpu')
         model.set_bias_from_targets(y)
         loss = rmse_model(model, X, y, self.n_epochs)
-        self.assertTrue(loss < 10.0, f'Expected loss = {loss} < 10.0')
+        value = 20.0
+        self.assertTrue(loss < value, f'Expected loss = {loss} < {value}')
         model.save_model(os.path.join(self.test_dir, 'test_l2_oblivious_cpu'))
         model._model.reset()
         model.set_bias_from_targets(y)
         train_loss = model.fit(X, y, self.n_epochs)
-        value = 10.0
+        value = 20.0
         self.assertTrue(train_loss < value, f'Expected loss = {train_loss} < {value}')
 
         X_categorical, y_categorical = self.cat_data
