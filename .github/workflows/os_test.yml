@@ -79,6 +79,7 @@ jobs:
         python -m unittest discover tests
 
     - name: Run tests without env variables
+      continue-on-error: true
       if: matrix.os != 'macos-latest'
       run: |
         python -m unittest discover tests

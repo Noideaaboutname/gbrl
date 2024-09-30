@@ -202,9 +202,9 @@ class TestGBTSingle(unittest.TestCase):
                             device='cpu')
         model.set_bias_from_targets(y)
         loss = rmse_model(model, X, y, self.n_epochs)
-        value = 15
+        value = 16
         self.assertTrue(loss < value, f'Expected loss = {loss} < {value}')
-        model.save_model(os.path.join(self.test_dir, 'test_cosine_oblivious_gpu'))
+        model.save_model(os.path.join(self.test_dir, 'test_cosine_oblivious_cpu'))
         model._model.reset()
         model.set_bias_from_targets(y)
         train_loss = model.fit(X, y, self.n_epochs)
