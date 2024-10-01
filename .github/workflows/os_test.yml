@@ -1,9 +1,9 @@
 name: CI Pipeline
 
 on:
-  push:
-    branches:
-      - precompilation
+  # push:
+  #   branches:
+  #     - precompilation
     # paths:
     #   - 'gbrl/**'   # Trigger on changes to files in the src directory
   pull_request:
