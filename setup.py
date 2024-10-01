@@ -146,7 +146,7 @@ setup(
     cmdclass=dict(build_ext=CMakeBuild, bdist_wheel=CustomBdistWheel),
     packages=find_packages(include=["gbrl"]),  # List of all packages to include
     include_package_data=True,
-    requires=["setuptools>=42",
+    install_requires=["setuptools>=42",
     "wheel",
     "cmake>=3.18",
     "pybind11[global]==2.13.1"]
