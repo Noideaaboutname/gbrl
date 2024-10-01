@@ -19,11 +19,11 @@ def detect_installed_cuda_version():
             with open(os.path.join(cuda_home, 'version.txt'), 'r') as f:
                 version_info = f.read().strip()
                 major, minor = version_info.split()[2].split('.')
-                return f"cu{major}"
+                return f"+cu{major}"
         except:
-            return "cpu"
+            return ""
     else:
-        return "cpu"
+        return ""
     
 class CMakeExtension(Extension):
     """Extension to integrate CMake build"""
@@ -118,20 +118,25 @@ class CustomBdistWheel(_bdist_wheel):
     """Custom bdist_wheel to modify the name based on build info"""
     def get_tag(self):
         python_tag, abi_tag, platform_tag = super().get_tag()
+       
+
+        return python_tag, abi_tag, platform_tag
+    def run(self):
+        # Dynamically modify version before running bdist_wheel
         build_ext_cmd = self.get_finalized_command('build_ext')
         # Read the build_info.txt file
+        device = ''
         if hasattr(build_ext_cmd, 'build_info_path') and os.path.exists(build_ext_cmd.build_info_path):
             with open(build_ext_cmd.build_info_path, 'r') as f:
                 build_info = f.read().strip()
                 device = build_info.split('=')[-1]  
                 if device != 'cpu':
                     device = f'cu{device}'
-                platform_tag += f'-{device}'
+
         else: 
             device = detect_installed_cuda_version()
-            platform_tag += f'-{device}'
-
-        return python_tag, abi_tag, platform_tag
+        self.distribution.metadata.version = f"{self.distribution.metadata.version}+{device}"
+        super().run()
 
         
 
