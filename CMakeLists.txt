@@ -118,9 +118,13 @@ endif()
 
 if(NOT USE_CUDA)
     message(STATUS "Compiling for CPU only")
+    file(WRITE "${CMAKE_BINARY_DIR}/build_info.txt" "CUDA_VERSION=cpu\n")
 else()
     message(STATUS "NVCC ${CUDAToolkit_VERSION} found, compiling for CPU and GPU")
+    file(WRITE "${CMAKE_BINARY_DIR}/build_info.txt" "CUDA_VERSION=${CUDAToolkit_VERSION_MAJOR}\n")
 endif()
+
+
 # Find required packages
 # Attempt to find pybind11 automatically with Anaconda
 find_package(pybind11 CONFIG QUIET HINTS $ENV{CONDA_PREFIX}) 
@@ -203,14 +207,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
         target_link_libraries(gbrl_cpp PRIVATE CUDA::cudart)
     endif()
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    # find_package(LLVM REQUIRED)
-    # include_directories(${LLVM_INCLUDE_DIRS})
-    # link_directories(${LLVM_LIBRARY_DIRS})
-    # set(EXTERNAL_OMP_LIB_DIR "${CMAKE_SOURCE_DIR}/gbrl/include/libomp/")
-    # Find the dynamic library
-    # find_library(OMP_LIBRARY NAMES omp PATHS ${EXTERNAL_OMP_LIB_DIR} NO_DEFAULT_PATH)
     target_link_libraries(gbrl_cpp PRIVATE ${LLVM_LIBRARIES} OpenMP::OpenMP_CXX)
-    # target_link_libraries(gbrl_cpp PRIVATE ${LLVM_LIBRARIES} ${OMP_LIBRARY})
 elseif (WIN32)
     target_link_libraries(gbrl_cpp PRIVATE OpenMP::OpenMP_CXX)
     if (USE_CUDA)

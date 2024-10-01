@@ -1,20 +1,35 @@
 import os
-import sys
-import subprocess
 import platform
-import shutil
-from setuptools import setup, Extension, find_packages
-from setuptools.command.build_ext import build_ext
-from distutils import log
+import subprocess
+import sys
 import sysconfig
+from distutils import log
 
+from setuptools import Extension, find_packages, setup
+from setuptools.command.build_ext import build_ext
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
+def detect_installed_cuda_version():
+    """Detect installed CUDA version using environment variables."""
+    cuda_home = os.environ.get('CUDA_HOME') or os.environ.get('CUDA_PATH')
+    
+    if cuda_home and os.path.exists(os.path.join(cuda_home, 'version.txt')):
+        # Read the CUDA version from the version.txt file in the CUDA installation directory
+        try:
+            with open(os.path.join(cuda_home, 'version.txt'), 'r') as f:
+                version_info = f.read().strip()
+                major, minor = version_info.split()[2].split('.')
+                return f"cu{major}"
+        except:
+            return "cpu"
+    else:
+        return "cpu"
+    
 class CMakeExtension(Extension):
     """Extension to integrate CMake build"""
     def __init__(self, name, sourcedir=''):
         super().__init__(name, sources=[])
         self.sourcedir = os.path.abspath(sourcedir)
-        print(self.sourcedir)
 
 class CMakeBuild(build_ext):
     """Build extension using CMake"""
@@ -73,6 +88,8 @@ class CMakeBuild(build_ext):
         self.run_subprocess(['cmake', '--build', '.'] + build_args, build_temp)
 
         self.move_built_library(extdir)
+        self.build_info_path = os.path.join(build_temp, 'build_info.txt')
+        print(f"Build info path set to: {self.build_info_path}")  # DEBUG: Print to verify the path
 
     def run_subprocess(self, cmd, cwd):
         log.info('Running command: {}'.format(' '.join(cmd)))
@@ -97,10 +114,31 @@ class CMakeBuild(build_ext):
             log.info(f'Moving {built_object} to {dest_path}')
             self.copy_file(built_object, dest_path)
 
+class CustomBdistWheel(_bdist_wheel):
+    """Custom bdist_wheel to modify the name based on build info"""
+    def get_tag(self):
+        python_tag, abi_tag, platform_tag = super().get_tag()
+        build_ext_cmd = self.get_finalized_command('build_ext')
+        # Read the build_info.txt file
+        if hasattr(build_ext_cmd, 'build_info_path') and os.path.exists(build_ext_cmd.build_info_path):
+            with open(build_ext_cmd.build_info_path, 'r') as f:
+                build_info = f.read().strip()
+                device = build_info.split('=')[-1]  
+                if device != 'cpu':
+                    device = f'cu{device}'
+                platform_tag += f'-{device}'
+        else: 
+            device = detect_installed_cuda_version()
+            platform_tag += f'-{device}'
+
+        return python_tag, abi_tag, platform_tag
+
+        
+
 setup(
     name="gbrl",
     ext_modules=[CMakeExtension('gbrl/gbrl_cpp', sourcedir='.')],
-    cmdclass=dict(build_ext=CMakeBuild),
+    cmdclass=dict(build_ext=CMakeBuild, bdist_wheel=CustomBdistWheel),
     packages=find_packages(include=["gbrl"]),  # List of all packages to include
     include_package_data=True,
 )
