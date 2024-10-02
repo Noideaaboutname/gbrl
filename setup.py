@@ -132,6 +132,8 @@ class CustomBdistWheel(_bdist_wheel):
                 device = build_info.split('=')[-1]  
                 if device != 'cpu':
                     device = f'cu{device}'
+                else:
+                    device = ""
 
         else: 
             device = detect_installed_cuda_version()
