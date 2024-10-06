@@ -14,3 +14,5 @@ dist/
 docs/_build/
 *.ncu-rep
 *.nfs*
+local_binaries/
+binaries/
